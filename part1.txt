@@ -1,4 +1,4 @@
-1. echo "one1" > mount/one.txt
+1.
 
 ** create: /one.txt **
 ** flush /one.txt **
@@ -6,8 +6,7 @@
 ** flush /one.txt **
 ** release /one.txt **
 
-
-2. cp mount/one.txt mount/two.txt
+2. 
 
 ** open: /one.txt **
 ** create: /two.txt **
@@ -18,15 +17,14 @@
 ** flush /one.txt **
 ** release /one.txt **
 
-
-3. cat mount/two.txt
+3.
 
 ** open: /two.txt **
 ** read: /two.txt **
 ** flush /two.txt **
 ** release /two.txt **
 
-4. cat mount/one.txt mount/two.txt > mount/three.txt
+4.
 
 ** create: /three.txt **
 ** flush /three.txt **
@@ -43,7 +41,7 @@
 ** flush /three.txt **
 ** release /three.txt **
 
-5. nano mount/three.txt
+5.
 
 ** create: /.three.txt.swp **
 ** write: /.three.txt.swp **
@@ -56,9 +54,6 @@
 ** open: /three.txt **
 ** flush /three.txt **
 ** release /three.txt **
-
-6. Removing then adding text:
-
 ** create: /.three.txt.swp **
 ** write: /.three.txt.swp **
 ** flush /.three.txt.swp **
@@ -68,3 +63,4 @@
 ** write: /three.txt **
 ** flush /three.txt **
 ** release /three.txt **
+

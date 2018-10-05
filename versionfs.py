@@ -9,6 +9,7 @@ import errno
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 
+#bool newFile = false
 
 class VersionFS(LoggingMixIn, Operations):
     def __init__(self):
@@ -33,6 +34,8 @@ class VersionFS(LoggingMixIn, Operations):
     # Filesystem methods
     # ==================
 
+
+# can we access this path?
     def access(self, path, mode):
         # print "access:", path, mode
         full_path = self._full_path(path)
@@ -49,6 +52,7 @@ class VersionFS(LoggingMixIn, Operations):
         full_path = self._full_path(path)
         return os.chown(full_path, uid, gid)
 
+
     def getattr(self, path, fh=None):
         # print "getattr:", path
         full_path = self._full_path(path)
@@ -56,6 +60,7 @@ class VersionFS(LoggingMixIn, Operations):
         return dict((key, getattr(st, key)) for key in ('st_atime', 'st_ctime',
                      'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid'))
 
+#need to modify. goes through and looks throiugh current dir and reads filenames
     def readdir(self, path, fh):
         # print "readdir:", path
         full_path = self._full_path(path)
@@ -120,11 +125,19 @@ class VersionFS(LoggingMixIn, Operations):
     # ============
 
     def open(self, path, flags):
+
+        # A FILE IS BEING ACCESSED, THIS MAY NEED TO BE SAVED.
+
         print '** open:', path, '**'
         full_path = self._full_path(path)
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
+
+        # A NEW FILE IS BEING MADE! THIS WILL NEED TO BE SAVED.
+
+        #newFile = true
+
         print '** create:', path, '**'
         full_path = self._full_path(path)
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
@@ -150,6 +163,19 @@ class VersionFS(LoggingMixIn, Operations):
         return os.fsync(fh)
 
     def release(self, path, fh):
+
+        # WHEN WE RELEASE, IF THE FILE HAS CHANGED IT MUST BE SAVED AND A VERSION MADE.
+        # IF THE FILE STARTS WITH A . THEN IGNORE IT
+
+
+        # if (newFile){
+        #     # THIS NEEDS TO BE SAVED. A VERSION NEEDS TO BE MADE.
+
+
+        # } else if (the file has been opened and changed){
+        #     # IF THE FILE HAS BEEN OPENED AND HAS BEEN CHANGED
+        # }
+
         print '** release', path, '**'
         return os.close(fh)
 
