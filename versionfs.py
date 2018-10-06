@@ -131,18 +131,14 @@ class VersionFS(LoggingMixIn, Operations):
         print '** open:', path, '**'
         full_path = self._full_path(path)
         # store a temp file with initial content of opened file
-        copy2(full_path, self.root + '/temp')
+        copy2(full_path, full_path + '.tmp')
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
         print '** create:', path, '**'   
         global newFile 
         newFile= True
-        if (newFile):
-            print 'new file is true'
-
         full_path = self._full_path(path)
- 
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
 
     def read(self, path, length, offset, fh):
@@ -168,10 +164,12 @@ class VersionFS(LoggingMixIn, Operations):
     def release(self, path, fh):
 
         print '** release', path, '**'
-        tempPath = self.root + '/temp'
-
+        tempPath = self._full_path(path) + '.tmp'
+        global newFile
         if (newFile):
             print 'this is a brand new file, should be saved'
+            # reset value of new file for next iteration
+            newFile = False
 
         if (os.path.isfile(tempPath)):
             print("the temp file exists")
@@ -183,7 +181,6 @@ class VersionFS(LoggingMixIn, Operations):
             print 'removing file'
             os.remove(tempPath)
 
-        print 'closing the thing'
         return os.close(fh)
 
     def fsync(self, path, fdatasync, fh):
