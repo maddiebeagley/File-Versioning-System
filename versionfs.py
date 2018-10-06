@@ -132,7 +132,7 @@ class VersionFS(LoggingMixIn, Operations):
         print '** open:', path, '**'
         full_path = self._full_path(path)
         # store a temp file with initial content of opened file
-        copy2(full_path, full_path + '.tmp')
+        copy2(full_path, full_path + '_tmp')
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
@@ -170,33 +170,36 @@ class VersionFS(LoggingMixIn, Operations):
         # find all the versions of the current file
         versions = glob.glob(filepath + '.*')
 
-        if (len(versions) > 6):
-            print 'there are more than 6 versions'
-            # need to remove oldest (smallest number at start of list)
-            #versions.pop(0)
-            # now save the new version as the biggest number plus one
-            #lastVersion = version[len(versions) - 1]
-
-        elif(len(versions) == 0):
-            print 'there are no versions yet'
-            # need to make the first version!
-            copy2(filepath, filepath + '.1')
-
         print 'current versions'
         for name in versions:
             print '\n', name
 
+        if(len(versions) == 0):
+            print 'there are no versions yet'
+            # need to make the first version!
+            copy2(filepath, filepath + '.1')
+
+        else :
+            # oldest version must be deleted
+            #if (len(versions) > 6):
+                # delete version with smallest suffix
+            oldest = versions.pop(0)
+            print 'oldest version is: ', oldest
+            os.remove(oldest)
+
+            # make new version with number +1 from the 
+
     def release(self, path, fh):
 
         print '** release', path, '**'
-        tempPath = self._full_path(path) + '.tmp'
+        tempPath = self._full_path(path) + '_tmp'
         global newFile
 
         # if the file has just been created, it must be saved
         if (newFile):
             print 'this is a brand new file, it should be saved'
-            # reset value of new file for next iteration
             self.newVersion(path, fh)
+            # reset value of new file for next iteration
             newFile = False
 
         # if the file has been opened and changed, it must be saved
