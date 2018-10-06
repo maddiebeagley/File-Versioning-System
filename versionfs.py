@@ -8,6 +8,7 @@ import sys
 import errno
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
+from shutil import copy2
 
 #bool newFile = false
 
@@ -130,6 +131,10 @@ class VersionFS(LoggingMixIn, Operations):
 
         print '** open:', path, '**'
         full_path = self._full_path(path)
+
+        print 'root: ', self.root
+        copy2(full_path, self.root + '/temp')
+
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
@@ -139,7 +144,9 @@ class VersionFS(LoggingMixIn, Operations):
         #newFile = true
 
         print '** create:', path, '**'
+        
         full_path = self._full_path(path)
+ 
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
 
     def read(self, path, length, offset, fh):
