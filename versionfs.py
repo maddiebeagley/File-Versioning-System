@@ -2,11 +2,12 @@
 from __future__ import with_statement
 
 import logging
-
 import os
 import sys
 import errno
 import filecmp
+import glob
+import re
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 from shutil import copy2
@@ -38,7 +39,7 @@ class VersionFS(LoggingMixIn, Operations):
     # ==================
 
 
-# can we access this path?
+    # can we access this path?
     def access(self, path, mode):
         # print "access:", path, mode
         full_path = self._full_path(path)
@@ -63,7 +64,7 @@ class VersionFS(LoggingMixIn, Operations):
         return dict((key, getattr(st, key)) for key in ('st_atime', 'st_ctime',
                      'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid'))
 
-#need to modify. goes through and looks throiugh current dir and reads filenames
+    #need to modify. goes through and looks throiugh current dir and reads filenames
     def readdir(self, path, fh):
         # print "readdir:", path
         full_path = self._full_path(path)
@@ -161,24 +162,52 @@ class VersionFS(LoggingMixIn, Operations):
         print '** flush', path, '**'
         return os.fsync(fh)
 
+
+    def newVersion(self, path, fh):
+        print 'making a new version!'
+        filepath = self._full_path(path)
+
+        # find all the versions of the current file
+        versions = glob.glob(filepath + '.*')
+
+        if (len(versions) > 6):
+            print 'there are more than 6 versions'
+            # need to remove oldest (smallest number at start of list)
+            #versions.pop(0)
+            # now save the new version as the biggest number plus one
+            #lastVersion = version[len(versions) - 1]
+
+        elif(len(versions) == 0):
+            print 'there are no versions yet'
+            # need to make the first version!
+            copy2(filepath, filepath + '.1')
+
+        print 'current versions'
+        for name in versions:
+            print '\n', name
+
     def release(self, path, fh):
 
         print '** release', path, '**'
         tempPath = self._full_path(path) + '.tmp'
         global newFile
+
+        # if the file has just been created, it must be saved
         if (newFile):
-            print 'this is a brand new file, should be saved'
+            print 'this is a brand new file, it should be saved'
             # reset value of new file for next iteration
+            self.newVersion(path, fh)
             newFile = False
 
-        if (os.path.isfile(tempPath)):
+        # if the file has been opened and changed, it must be saved
+        elif (os.path.isfile(tempPath)):
             print("the temp file exists")
 
-            # if the file has changed, it must be saved
             if not (filecmp.cmp(self._full_path(path), tempPath)):
-                print("the files are not the same")
+                print("the files are not the same, need to save")
+                self.newVersion(path, fh)
 
-            print 'removing file'
+            print 'removing temp file'
             os.remove(tempPath)
 
         return os.close(fh)
@@ -186,7 +215,6 @@ class VersionFS(LoggingMixIn, Operations):
     def fsync(self, path, fdatasync, fh):
         print '** fsync:', path, '**'
         return self.flush(path, fh)
-
 
 
 def main(mountpoint):
