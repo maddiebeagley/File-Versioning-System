@@ -6,11 +6,13 @@ import logging
 import os
 import sys
 import errno
+import filecmp
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 from shutil import copy2
 
-#bool newFile = false
+global newFile
+newFile = False
 
 class VersionFS(LoggingMixIn, Operations):
     def __init__(self):
@@ -126,25 +128,19 @@ class VersionFS(LoggingMixIn, Operations):
     # ============
 
     def open(self, path, flags):
-
-        # A FILE IS BEING ACCESSED, THIS MAY NEED TO BE SAVED.
-
         print '** open:', path, '**'
         full_path = self._full_path(path)
-
-        print 'root: ', self.root
+        # store a temp file with initial content of opened file
         copy2(full_path, self.root + '/temp')
-
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
+        print '** create:', path, '**'   
+        global newFile 
+        newFile= True
+        if (newFile):
+            print 'new file is true'
 
-        # A NEW FILE IS BEING MADE! THIS WILL NEED TO BE SAVED.
-
-        #newFile = true
-
-        print '** create:', path, '**'
-        
         full_path = self._full_path(path)
  
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
@@ -171,19 +167,23 @@ class VersionFS(LoggingMixIn, Operations):
 
     def release(self, path, fh):
 
-        # WHEN WE RELEASE, IF THE FILE HAS CHANGED IT MUST BE SAVED AND A VERSION MADE.
-        # IF THE FILE STARTS WITH A . THEN IGNORE IT
-
-
-        # if (newFile){
-        #     # THIS NEEDS TO BE SAVED. A VERSION NEEDS TO BE MADE.
-
-
-        # } else if (the file has been opened and changed){
-        #     # IF THE FILE HAS BEEN OPENED AND HAS BEEN CHANGED
-        # }
-
         print '** release', path, '**'
+        tempPath = self.root + '/temp'
+
+        if (newFile):
+            print 'this is a brand new file, should be saved'
+
+        if (os.path.isfile(tempPath)):
+            print("the temp file exists")
+
+            # if the file has changed, it must be saved
+            if not (filecmp.cmp(self._full_path(path), tempPath)):
+                print("the files are not the same")
+
+            print 'removing file'
+            os.remove(tempPath)
+
+        print 'closing the thing'
         return os.close(fh)
 
     def fsync(self, path, fdatasync, fh):
@@ -191,9 +191,10 @@ class VersionFS(LoggingMixIn, Operations):
         return self.flush(path, fh)
 
 
+
 def main(mountpoint):
     FUSE(VersionFS(), mountpoint, nothreads=True, foreground=True)
 
 if __name__ == '__main__':
-    # logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
     main(sys.argv[1])
