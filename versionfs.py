@@ -181,30 +181,33 @@ class VersionFS(LoggingMixIn, Operations):
 
         # find all the versions of the current file and sort oldest to newest
         versions = sorted(glob.glob(versionFilePath + '.*'))
+        versions.reverse()
 
-        # no versions for this file have been  made
-        if(len(versions) == 0):
-            copy2(filePath, versionFilePath + '.1')
+        print 'versions before check: ',str(len(versions))
 
-        else :
-            # delete the oldest version to allow for new version
-            if (len(versions) == 6):
-                # oldest version is version with smallest version number
-                oldest = versions.pop(0)
-                os.remove(oldest)
-            
-            # find the most recent version
-            newest = versions.pop(len(versions) - 1)
+        # delete the oldest version to make room for new version
+        if (len(versions) == 6):
+            # oldest version is version with largest version number
+            print 'deleting an old version'
+            oldest = versions.pop(0)
+            os.remove(oldest)
 
+        print 'versions after check: ', str(len(versions))
+
+        # increment the version number for each version
+        for version in versions:
             # extract version number from filename
-            ints = re.findall(r'\d+', newest)
+            ints = re.findall(r'\d+', version)
             versionNum = ints[len(ints) - 1] 
 
-            # increment version number for newest version
+            # increment version number
             newVersionNum = int(versionNum) + 1
 
-            # store the most recent version with corresponding version number
-            copy2(filePath, versionFilePath + '.' + str(newVersionNum))
+            # rename the version with incremented version number
+            os.rename(version, versionFilePath + '.' + str(newVersionNum))
+
+        # store the most recent version as first version
+        copy2(filePath, versionFilePath + '.1')
 
 
     def release(self, path, fh):
