@@ -17,5 +17,5 @@ versionPath = os.getcwd() + '/.versiondir/.' + filename
 versions = sorted(glob.glob(versionPath + '*'))
 
 # remove all the versions of the input file except for the last
-for version in versions[:len(versions)-1]:
+for version in versions[1:]:
     os.remove(version)

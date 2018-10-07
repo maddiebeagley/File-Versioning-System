@@ -21,9 +21,6 @@ versions = sorted(glob.glob(versionPath + '*'))
 if (len(versions) < versionNum):
     print 'Sorry, this version doesn\'t exist'
     exit()
-elif (len(versions) == 0):
-    print 'The file name supplied doesn\'t have any versions'
-    exit()
 
 catVersion = open(versions[versionNum-1], 'r')
 print(catVersion.read())
