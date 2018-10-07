@@ -1,5 +1,8 @@
 #!/usr/bin/env python2
 
+# upi: mbea966
+# name: Madeleine Beagley
+
 import glob
 import os
 import sys

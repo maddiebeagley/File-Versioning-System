@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+
+# upi: mbea966
+# name: Madeleine Beagley
+
 from __future__ import with_statement
 
 import logging

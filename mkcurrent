@@ -1,5 +1,8 @@
 #!/usr/bin/env python2
 
+# upi: mbea966
+# name: Madeleine Beagley
+
 import glob
 import os
 import sys
@@ -17,6 +20,7 @@ else :
     exit()
 
 versionPath = os.getcwd() + '/.versiondir/.' + filename
+filePath = os.cwd() + '/.versiondir/' + filename
 
 # find all the versions of the current file
 versions = sorted(glob.glob(versionPath + '.*'))
@@ -48,4 +52,5 @@ for version in versions:
 
 # most recent version is now the requested previous version
 copy2(versionPath + '_tmp', versionPath + '.1')
+copy2(versionPath + '_tmp', filePath)
 os.remove(versionPath + '_tmp')

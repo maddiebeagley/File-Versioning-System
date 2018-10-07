@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# upi: mbea966
+# name: Madeleine Beagley
+
 # remove versiondir directory and any content in mount
 rm -rf .versiondir/ mount/*
 
