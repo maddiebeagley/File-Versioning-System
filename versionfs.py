@@ -128,24 +128,21 @@ class VersionFS(LoggingMixIn, Operations):
     def open(self, path, flags):
         print '** open:', path, '**'
         full_path = self._full_path(path)
+
         # store a temp file with initial content of opened file if it is not hidden
         if not (os.path.basename(full_path).startswith('.')):
-            print 'file is not hidden, making a copy'
             copy2(full_path, full_path + '_tmp')
-        else :
-            print 'the file is hidden'
         
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
         print '** create:', path, '**'   
         full_path = self._full_path(path)
-        # make an empty temp file
+
+        # make an empty temp file if created file is not hidden
         if not (os.path.basename(full_path).startswith('.')):
-            print 'file is not hidden, making a copy'
             os.open(full_path + '_tmp', os.O_WRONLY | os.O_CREAT, mode)
-        else :
-            print 'the file is hidden' 
+
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
 
     def read(self, path, length, offset, fh):
@@ -210,7 +207,8 @@ class VersionFS(LoggingMixIn, Operations):
             # compare state of temp and current version of file
             if not (filecmp.cmp(self._full_path(path), tempPath)):
                 self.newVersion(path, fh)
-
+                
+            # temp files should be wiped after each release
             os.remove(tempPath)
 
         return os.close(fh)
