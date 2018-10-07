@@ -168,7 +168,7 @@ class VersionFS(LoggingMixIn, Operations):
         filepath = self._full_path(path)
 
         # find all the versions of the current file
-        versions = glob.glob(filepath + '.*')
+        versions = sorted(glob.glob(filepath + '.*'))
 
         print 'current versions'
         for name in versions:
@@ -181,13 +181,20 @@ class VersionFS(LoggingMixIn, Operations):
 
         else :
             # oldest version must be deleted
-            #if (len(versions) > 6):
+            if (len(versions) == 6):
                 # delete version with smallest suffix
-            oldest = versions.pop(0)
-            print 'oldest version is: ', oldest
-            os.remove(oldest)
+                oldest = versions.pop(0)
+                print 'oldest version is: ', oldest
+                os.remove(oldest)
+            
+            newest = versions.pop(len(versions) - 1)
+            ints = re.findall(r'\d+', newest)
+            versionNum = ints[len(ints) - 1] 
+            print 'the oldest version is currently: ', versionNum
+            newVersionNum = int(versionNum) + 1
 
-            # make new version with number +1 from the 
+            copy2(filepath, filepath + '.' + str(newVersionNum))
+
 
     def release(self, path, fh):
 
@@ -224,5 +231,5 @@ def main(mountpoint):
     FUSE(VersionFS(), mountpoint, nothreads=True, foreground=True)
 
 if __name__ == '__main__':
-    #logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
     main(sys.argv[1])
