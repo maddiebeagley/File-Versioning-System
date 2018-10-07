@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# remove regular files from directories
-rm -rf .versiondir/* mount/*
-
-# remove hidden files from directories and redirect error messages
-rm -rf .versiondir/.* mount/.* 2> /dev/null
+# remove versiondir directory and any content in mount
+rm -rf .versiondir/ mount/*
 
 # remove compiled fuse file
 rm fuse.pyc
