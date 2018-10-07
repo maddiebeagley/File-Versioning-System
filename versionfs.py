@@ -77,6 +77,7 @@ class VersionFS(LoggingMixIn, Operations):
         if os.path.isdir(full_path):
             dirents.extend(os.listdir(full_path))
         for r in dirents:
+            # only display files in mount that are not hidden
             if (self.notHidden(r)):
                 yield r
 
@@ -175,14 +176,15 @@ class VersionFS(LoggingMixIn, Operations):
 
 
     def newVersion(self, path, fh):
-        filepath = self._full_path(path)
+        versionFilePath = self.root + '/.' + os.path.basename(path)
+        filePath = self._full_path(path)
 
         # find all the versions of the current file and sort oldest to newest
-        versions = sorted(glob.glob(filepath + '.*'))
+        versions = sorted(glob.glob(versionFilePath + '.*'))
 
         # no versions for this file have been  made
         if(len(versions) == 0):
-            copy2(filepath, filepath + '.1')
+            copy2(filePath, versionFilePath + '.1')
 
         else :
             # delete the oldest version to allow for new version
@@ -201,8 +203,8 @@ class VersionFS(LoggingMixIn, Operations):
             # increment version number for newest version
             newVersionNum = int(versionNum) + 1
 
-            # store the most recent version
-            copy2(filepath, filepath + '.' + str(newVersionNum))
+            # store the most recent version with corresponding version number
+            copy2(filePath, versionFilePath + '.' + str(newVersionNum))
 
 
     def release(self, path, fh):
