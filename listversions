@@ -1,0 +1,23 @@
+#!/usr/bin/env python2
+
+import glob
+import os
+import sys
+
+# extract filename from command line input
+if (len(sys.argv) == 2):
+    filename = sys.argv[1]
+else :
+    print 'Enter a single filename as input'
+    exit()
+
+versionPath = os.getcwd() + '/.versiondir/.' + filename
+
+# find all the versions of the file
+versions = sorted(glob.glob(versionPath + '*'))
+
+numVersion = 1
+
+for version in versions:
+    print filename + '.' + str(numVersion)
+    numVersion += 1
