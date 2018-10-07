@@ -22,5 +22,6 @@ if (len(versions) < versionNum):
     print 'Sorry, this version doesn\'t exist'
     exit()
 
+# open the file and print contents
 catVersion = open(versions[versionNum-1], 'r')
 print(catVersion.read())

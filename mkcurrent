@@ -11,6 +11,7 @@ from shutil import copy2
 if (len(sys.argv) == 3):
     filename = sys.argv[1]
     versionNum = int(sys.argv[2])
+# user has not supplied enough arguments
 else :
     print 'Enter a single filename and version number as input'
     exit()
@@ -20,16 +21,18 @@ versionPath = os.getcwd() + '/.versiondir/.' + filename
 # find all the versions of the current file
 versions = sorted(glob.glob(versionPath + '.*'))
 
-# store the version to update to in a temporary file
-curVersion = versions[versionNum -1]
-copy2(curVersion, versionPath + '_tmp')
+# store the version to update to in a temporary file if version exists
+if (len(versions) >= versionNum):
+    curVersion = versions[versionNum -1]
+    copy2(curVersion, versionPath + '_tmp')
+else :
+    print 'Sorry, this version does not exist'
 
 # sort the versions from oldest to newest
 versions.reverse()
 
 # delete the oldest version to make room for new version
 if (len(versions) == 6):
-    # oldest version is version with largest version number
     oldest = versions.pop(0)
     os.remove(oldest)
 
@@ -41,10 +44,8 @@ for version in versions:
 
     # increment version number
     newVersionNum = int(versionNum) + 1
-
-    # rename the version with incremented version number
     os.rename(version, versionPath + '.' + str(newVersionNum))
 
-# most recent version is now the request previous version
+# most recent version is now the requested previous version
 copy2(versionPath + '_tmp', versionPath + '.1')
 os.remove(versionPath + '_tmp')

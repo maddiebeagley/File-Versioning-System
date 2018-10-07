@@ -16,5 +16,6 @@ versionPath = os.getcwd() + '/.versiondir/.' + filename
 # find all the versions of the file
 versions = sorted(glob.glob(versionPath + '*'))
 
+# print out each version's filename
 for version in versions:
     print os.path.basename(version)[1:]

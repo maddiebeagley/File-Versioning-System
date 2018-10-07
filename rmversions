@@ -7,15 +7,16 @@ import sys
 # extract filename from command line input
 if (len(sys.argv) == 2):
     filename = sys.argv[1]
+# user has not supplied sufficient arguments
 else :
     print 'Enter a single filename as input'
     exit()
 
 versionPath = os.getcwd() + '/.versiondir/.' + filename
 
-# find all the versions of the file
+# find all versions of the file
 versions = sorted(glob.glob(versionPath + '*'))
 
-# remove all the versions of the input file except for the last
+# remove all versions of the input file except for the most recent
 for version in versions[1:]:
     os.remove(version)
