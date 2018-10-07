@@ -32,6 +32,12 @@ class VersionFS(LoggingMixIn, Operations):
         path = os.path.join(self.root, partial)
         return path
 
+    def notHidden(self, path):
+        if (os.path.basename(path).startswith('.')):
+            return False
+        return True
+
+
     # Filesystem methods
     # ==================
 
@@ -63,17 +69,19 @@ class VersionFS(LoggingMixIn, Operations):
 
     #need to modify. goes through and looks throiugh current dir and reads filenames
     def readdir(self, path, fh):
-        # print "readdir:", path
+        print '\n\n\n*******************************************'
+        print "readdir:", path
         full_path = self._full_path(path)
 
         dirents = ['.', '..']
         if os.path.isdir(full_path):
             dirents.extend(os.listdir(full_path))
         for r in dirents:
-            yield r
+            if (self.notHidden(r)):
+                yield r
 
     def readlink(self, path):
-        # print "readlink:", path
+        # print "*******************readlink:", path
         pathname = os.readlink(self._full_path(path))
         if pathname.startswith("/"):
             # Path name is absolute, sanitize it.
@@ -130,7 +138,7 @@ class VersionFS(LoggingMixIn, Operations):
         full_path = self._full_path(path)
 
         # store a temp file with initial content of opened file if it is not hidden
-        if not (os.path.basename(full_path).startswith('.')):
+        if (self.notHidden(full_path)):
             copy2(full_path, full_path + '_tmp')
         
         return os.open(full_path, flags)
@@ -140,7 +148,7 @@ class VersionFS(LoggingMixIn, Operations):
         full_path = self._full_path(path)
 
         # make an empty temp file if created file is not hidden
-        if not (os.path.basename(full_path).startswith('.')):
+        if (self.notHidden(full_path)):
             os.open(full_path + '_tmp', os.O_WRONLY | os.O_CREAT, mode)
 
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
@@ -179,7 +187,7 @@ class VersionFS(LoggingMixIn, Operations):
         else :
             # delete the oldest version to allow for new version
             if (len(versions) == 6):
-                # delete version with smallest suffix
+                # oldest version is version with smallest version number
                 oldest = versions.pop(0)
                 os.remove(oldest)
             
@@ -198,7 +206,6 @@ class VersionFS(LoggingMixIn, Operations):
 
 
     def release(self, path, fh):
-
         print '** release', path, '**'
         tempPath = self._full_path(path) + '_tmp'
 
@@ -206,9 +213,10 @@ class VersionFS(LoggingMixIn, Operations):
         if (os.path.isfile(tempPath)):
             # compare state of temp and current version of file
             if not (filecmp.cmp(self._full_path(path), tempPath)):
+                # make a new version of the file
                 self.newVersion(path, fh)
-                
-            # temp files should be wiped after each release
+
+            # temp files must be wiped after each release
             os.remove(tempPath)
 
         return os.close(fh)
