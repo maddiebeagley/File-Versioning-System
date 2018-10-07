@@ -183,16 +183,11 @@ class VersionFS(LoggingMixIn, Operations):
         versions = sorted(glob.glob(versionFilePath + '.*'))
         versions.reverse()
 
-        print 'versions before check: ',str(len(versions))
-
         # delete the oldest version to make room for new version
         if (len(versions) == 6):
             # oldest version is version with largest version number
-            print 'deleting an old version'
             oldest = versions.pop(0)
             os.remove(oldest)
-
-        print 'versions after check: ', str(len(versions))
 
         # increment the version number for each version
         for version in versions:
