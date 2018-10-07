@@ -12,9 +12,6 @@ import re
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 from shutil import copy2
 
-global newFile
-newFile = False
-
 class VersionFS(LoggingMixIn, Operations):
     def __init__(self):
         # get current working directory as place for versions tree
@@ -131,15 +128,24 @@ class VersionFS(LoggingMixIn, Operations):
     def open(self, path, flags):
         print '** open:', path, '**'
         full_path = self._full_path(path)
-        # store a temp file with initial content of opened file
-        copy2(full_path, full_path + '_tmp')
+        # store a temp file with initial content of opened file if it is not hidden
+        if not (os.path.basename(full_path).startswith('.')):
+            print 'file is not hidden, making a copy'
+            copy2(full_path, full_path + '_tmp')
+        else :
+            print 'the file is hidden'
+        
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
         print '** create:', path, '**'   
-        global newFile 
-        newFile= True
         full_path = self._full_path(path)
+        # make an empty temp file
+        if not (os.path.basename(full_path).startswith('.')):
+            print 'file is not hidden, making a copy'
+            os.open(full_path + '_tmp', os.O_WRONLY | os.O_CREAT, mode)
+        else :
+            print 'the file is hidden' 
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
 
     def read(self, path, length, offset, fh):
@@ -164,35 +170,33 @@ class VersionFS(LoggingMixIn, Operations):
 
 
     def newVersion(self, path, fh):
-        print 'making a new version!'
         filepath = self._full_path(path)
 
-        # find all the versions of the current file
+        # find all the versions of the current file and sort oldest to newest
         versions = sorted(glob.glob(filepath + '.*'))
 
-        print 'current versions'
-        for name in versions:
-            print '\n', name
-
+        # no versions for this file have been  made
         if(len(versions) == 0):
-            print 'there are no versions yet'
-            # need to make the first version!
             copy2(filepath, filepath + '.1')
 
         else :
-            # oldest version must be deleted
+            # delete the oldest version to allow for new version
             if (len(versions) == 6):
                 # delete version with smallest suffix
                 oldest = versions.pop(0)
-                print 'oldest version is: ', oldest
                 os.remove(oldest)
             
+            # find the most recent version
             newest = versions.pop(len(versions) - 1)
+
+            # extract version number from filename
             ints = re.findall(r'\d+', newest)
             versionNum = ints[len(ints) - 1] 
-            print 'the oldest version is currently: ', versionNum
+
+            # increment version number for newest version
             newVersionNum = int(versionNum) + 1
 
+            # store the most recent version
             copy2(filepath, filepath + '.' + str(newVersionNum))
 
 
@@ -200,24 +204,13 @@ class VersionFS(LoggingMixIn, Operations):
 
         print '** release', path, '**'
         tempPath = self._full_path(path) + '_tmp'
-        global newFile
-
-        # if the file has just been created, it must be saved
-        if (newFile):
-            print 'this is a brand new file, it should be saved'
-            self.newVersion(path, fh)
-            # reset value of new file for next iteration
-            newFile = False
 
         # if the file has been opened and changed, it must be saved
-        elif (os.path.isfile(tempPath)):
-            print("the temp file exists")
-
+        if (os.path.isfile(tempPath)):
+            # compare state of temp and current version of file
             if not (filecmp.cmp(self._full_path(path), tempPath)):
-                print("the files are not the same, need to save")
                 self.newVersion(path, fh)
 
-            print 'removing temp file'
             os.remove(tempPath)
 
         return os.close(fh)
