@@ -73,8 +73,7 @@ class VersionFS(LoggingMixIn, Operations):
 
     #need to modify. goes through and looks throiugh current dir and reads filenames
     def readdir(self, path, fh):
-        print '\n\n\n*******************************************'
-        print "readdir:", path
+        # print "readdir:", path
         full_path = self._full_path(path)
 
         dirents = ['.', '..']

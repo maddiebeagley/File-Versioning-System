@@ -73,7 +73,7 @@ PART 4
 
 If a file is deleted from the mount directory, if all the corresponding versions stored
  in .versiondir are also deleted, the user will be unable to recover any of their 
- information. If the deletion in the mount directory was unintentional, the user will have 
+ information if they so desire. If the deletion in the mount directory was unintentional, the user will have 
  irreversibly lost all their previous work. However, in the case where the user does intend 
  to delete the file, deleting its corresponding versions will reduce storage space and stop 
  unused files being stored. If at a later date the user wanted to retrieve this data, they

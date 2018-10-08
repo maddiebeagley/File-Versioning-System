@@ -30,7 +30,7 @@ if (len(versions) >= versionNum):
     curVersion = versions[versionNum -1]
     copy2(curVersion, versionPath + '_tmp')
 else :
-    print 'Sorry, this version does not exist'
+    print 'Sorry, this version does not exist for the given file'
 
 # sort the versions from oldest to newest
 versions.reverse()
