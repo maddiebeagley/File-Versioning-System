@@ -144,11 +144,11 @@ class VersionFS(LoggingMixIn, Operations):
         # store a temp file with initial content of opened file if it is not hidden
         if (self.notHidden(full_path)):
             copy2(full_path, full_path + '_tmp')
-        
+
         return os.open(full_path, flags)
 
     def create(self, path, mode, fi=None):
-        print '** create:', path, '**'   
+        print '** create:', path, '**'
         full_path = self._full_path(path)
 
         # make an empty temp file if created file is not hidden
@@ -196,7 +196,7 @@ class VersionFS(LoggingMixIn, Operations):
         for version in versions:
             # extract version number from filename
             ints = re.findall(r'\d+', version)
-            versionNum = ints[len(ints) - 1] 
+            versionNum = ints[len(ints) - 1]
 
             # increment version number
             newVersionNum = int(versionNum) + 1
@@ -233,5 +233,5 @@ def main(mountpoint):
     FUSE(VersionFS(), mountpoint, nothreads=True, foreground=True)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
     main(sys.argv[1])
