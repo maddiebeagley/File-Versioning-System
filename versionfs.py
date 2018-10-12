@@ -194,15 +194,18 @@ class VersionFS(LoggingMixIn, Operations):
 
         # increment the version number for each version
         for version in versions:
-            # extract version number from filename
-            ints = re.findall(r'\d+', version)
-            versionNum = ints[len(ints) - 1]
+            filename = os.path.basename(version)
+            if not (filename.endswith('.swp')):
 
-            # increment version number
-            newVersionNum = int(versionNum) + 1
+                # extract version number from filename
+                ints = re.findall(r'\d+', filename)
+                versionNum = ints[len(ints) - 1]
 
-            # rename the version with incremented version number
-            os.rename(version, versionFilePath + '.' + str(newVersionNum))
+                # increment version number
+                newVersionNum = int(versionNum) + 1
+
+                # rename the version with incremented version number
+                os.rename(version, versionFilePath + '.' + str(newVersionNum))
 
         # store the most recent version as first version
         copy2(filePath, versionFilePath + '.1')
