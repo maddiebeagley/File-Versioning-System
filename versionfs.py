@@ -153,7 +153,7 @@ class VersionFS(LoggingMixIn, Operations):
 
         # make an empty temp file if created file is not hidden
         if (self.notHidden(full_path)):
-            os.open(full_path + '_tmp', os.O_WRONLY | os.O_CREAT, mode)
+            os.mknod(full_path + '_tmp')
 
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
 
