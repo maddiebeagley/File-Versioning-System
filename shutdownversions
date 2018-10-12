@@ -3,11 +3,13 @@
 # upi: mbea966
 # name: Madeleine Beagley
 
+# shut down mounting system
+fusermount -u mount
+
 # remove versiondir directory and any content in mount
 rm -rf .versiondir/ mount/*
 
 # remove compiled fuse file
 rm fuse.pyc
 
-# shut down mounting system
-fusermount -u mount
+
